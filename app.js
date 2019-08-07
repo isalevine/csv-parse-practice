@@ -21,80 +21,79 @@ function Owner(investor, shares, cash_paid, ownership) {
 fs.createReadStream('example_data.csv')
     .pipe(csv())
     .on('data', (row) => {
-        // row["#INVESTMENT DATE"] is in 'yyyy-mm-dd' format
-        let investment_date = new Date(row["#INVESTMENT DATE"]) 
+        let investment_date = new Date(row["#INVESTMENT DATE"]) // row["#INVESTMENT DATE"] is in 'yyyy-mm-dd' format
         let cutoff_date = validateDate(process.argv[2])
 
+        // if user input is invalid as a date, set cutoff_date to today
         if (!cutoff_date) {
             cutoff_date = new Date();
         }
 
-        // skip row if investment_date is too recent
-        if (cutoff_date < investment_date) {
-            continue
+        // parse and store date in output["date"]
+        parseDate(cutoff_date);
+
+        // if investment_date is prior to cutoff_date, execute parsing code
+        if (cutoff_date > investment_date) {
+            parseRow(row);
         }
-
-
-        // destructure row
-        let shares_purchased, cash_paid, investor;
-        // investment_date = 
-        shares_purchased = parseInt(row[" SHARES PURCHASED"]);
-        // cash_paid = parseFloat(row[" CASH PAID"]).toFixed(2);  => will convert to string
-        // => if rounding to 2 decimals is needed, use Math.round10() per https://stackoverflow.com/a/19794305
-        cash_paid = parseFloat(row[" CASH PAID"]);
-        investor = row[" INVESTOR"].trim();
-
-        // csv-parser does NOT require a check/filter for headers
-        // => results[0] is the first row of NON-HEADER data
-
-        // check output["ownership"] for owner matching Investor name first
-        let matchFound = false;
-        while (!matchFound) {
-            // output["ownership"].forEach((owner) => {
-            for (i = 0; i < output["ownership"].length; i++) {
-                let owner = output["ownership"][i];
-
-                // If match is found, update data with row and break loop
-                if (owner["investor"] == investor) {
-                    addRowToOwner(shares_purchased = shares_purchased, cash_paid = cash_paid, owner_index = i);
-                    matchFound = true;
-                }
-            }
-            // If no match is found, add owner to output
-            if (!matchFound) {
-                addNewOwner(investor = investor, shares_purchased = shares_purchased, cash_paid = cash_paid);
-                matchFound = true;
-            };
-        }
-
-
-        // WAIT TO CALCULATE EACH OWNER'S OWNERSHIP AT END!!
-
-        
-
     })
     .on('end', () => {
-        // console.log('results[0]: ', results[0]);
         calculateOwnership();
+        // console.log(output) // has csv-parser's output formatting
+        console.log(JSON.stringify(output)); // print as JSON
     })
 
-// CURRENTLY: built w/o consideration of date
-// => refactor to filter by date w/ If
-
 // regex per https://stackoverflow.com/a/35413963
-function validateDate(argument) {
+function validateDate(input) {
+    if (!input) {
+        return false    // No input
+    };
     let regex = /\d{4}-\d{2}-\d{2}/g;
-    if (!argument.match(regex)) {
+    if (!input.match(regex)) {
         return false    // Invalid format
     };
 
-    let date = new Date(argument);
+    let date = new Date(input);
     let dateTime = date.getTime();
     if(!dateTime && dateTime !== 0) {
         return false    // NaN value, invalid date
     };
 
     return date
+}
+
+function parseDate(cutoff_date) {
+    let dateString = cutoff_date.toISOString().slice(0, 10); // yyyy-mm-dd
+    let dateArray = dateString.split("-"); // [ "yyyy", "mm", "dd"]
+    dateString = dateArray[1] + "/" + dateArray[2] + "/" + dateArray[0]; // "mm/dd/yyyy"
+    output["date"] = dateString;
+}
+
+function parseRow(row) {
+    // destructure row
+    let shares_purchased = parseInt(row[" SHARES PURCHASED"]);
+    let cash_paid = parseFloat(row[" CASH PAID"]);
+    let investor = row[" INVESTOR"].trim();
+
+    // check output["ownership"] for owner matching Investor name first
+    let matchFound = false;
+    while (!matchFound) {
+        // output["ownership"].forEach((owner) => {
+        for (i = 0; i < output["ownership"].length; i++) {
+            let owner = output["ownership"][i];
+
+            // If match is found, update data with row and break loop
+            if (owner["investor"] == investor) {
+                addRowToOwner(shares_purchased = shares_purchased, cash_paid = cash_paid, owner_index = i);
+                matchFound = true;
+            }
+        }
+        // If no match is found, add owner to output
+        if (!matchFound) {
+            addNewOwner(investor = investor, shares_purchased = shares_purchased, cash_paid = cash_paid);
+            matchFound = true;
+        };
+    }
 }
 
 // ONLY add to output["ownership"] array, then call updateOutputTotals()
@@ -127,5 +126,4 @@ function calculateOwnership() {
         // rounding strategy per https://stackoverflow.com/a/9453447
         owner["ownership"] = Math.round((owner["shares"] / output["total_number_of_shares"]) * 10000) / 100
     };
-    console.log(output)
 }
