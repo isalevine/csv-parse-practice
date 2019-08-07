@@ -17,12 +17,17 @@ function Owner(investor, shares, cash_paid, ownership) {
     this.ownership = ownership;   // Decimal (percentage)
 }
 
-// parse CSV
-fs.createReadStream('example_data.csv')
+const filename = process.argv[2];
+
+fs.createReadStream(filename)
+    .on('error', () => {
+        console.log("Invalid filename! Exiting program.");
+        xprocess.exit();
+    })
     .pipe(csv())
     .on('data', (row) => {
         let investment_date = new Date(row["#INVESTMENT DATE"]) // row["#INVESTMENT DATE"] is in 'yyyy-mm-dd' format
-        let cutoff_date = validateDate(process.argv[2])
+        let cutoff_date = validateDate(process.argv[3])
 
         // if user input is invalid as a date, set cutoff_date to today
         if (!cutoff_date) {
