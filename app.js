@@ -33,14 +33,14 @@ fs.createReadStream('example_data.csv')
         parseDate(cutoff_date);
 
         // if investment_date is prior to cutoff_date, execute parsing code
-        if (cutoff_date > investment_date) {
+        if (cutoff_date >= investment_date) {
             parseRow(row);
         }
     })
     .on('end', () => {
         calculateOwnership();
-        // console.log(output) // has csv-parser's output formatting
-        console.log(JSON.stringify(output)); // print as JSON
+        let json = JSON.stringify(output);
+        console.log(json);
     })
 
 // regex per https://stackoverflow.com/a/35413963
