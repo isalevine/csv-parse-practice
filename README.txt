@@ -15,7 +15,9 @@
 ## Installation
 
     Cap Table CSV Parser is a Node.js application. It makes use of the 'csv-parser'
-    package. To install:
+    package: https://www.npmjs.com/package/csv-parser 
+    
+    To install:
         1. Clone this repo and `cd` to enter the directory.
         2. Run `npm install` to install dependencies.
 
