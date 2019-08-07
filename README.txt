@@ -22,4 +22,17 @@
 
 ## Usage
 
+    Cap Table CSV Parser requires a filepath argument, and has an optional date argument.
     
+    To run the program using 'example_data.csv' in the current directory, run:
+    `node app.js example_data.csv`
+
+    You can also supply dates in YYYY-MM-DD format:
+    `node app.js example_data.csv 1990-01-27`
+
+    Supplying the optional date will create a cutoff date--only investments made
+    on or before that date will be processed. If no date is provided (or if the
+    argument is an invalid date), the default date is set to today.
+
+
+
