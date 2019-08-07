@@ -28,12 +28,7 @@ fs.createReadStream(filepath)
     .pipe(csv())
     .on('data', (row) => {
         let investment_date = new Date(row["#INVESTMENT DATE"]) // row["#INVESTMENT DATE"] is in 'yyyy-mm-dd' format
-        let cutoff_date = validateDate(process.argv[3])
-
-        // if user input is invalid as a date, set cutoff_date to today
-        if (!cutoff_date) {
-            cutoff_date = new Date();
-        }
+        let cutoff_date = validateDate(process.argv[3]) || new Date(); // if user input is invalid as a date, set cutoff_date to today
 
         // parse and store date in output["date"]
         parseDate(cutoff_date);
