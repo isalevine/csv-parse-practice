@@ -17,12 +17,13 @@ function Owner(investor, shares, cash_paid, ownership) {
     this.ownership = ownership;   // Decimal (percentage)
 }
 
-const filename = process.argv[2];
+// set filepath to 1st command-line argument, or to empty string (to catch errors)
+const filepath = process.argv[2] || "";
 
-fs.createReadStream(filename)
+fs.createReadStream(filepath)
     .on('error', () => {
-        console.log("Invalid filename! Exiting program.");
-        xprocess.exit();
+        console.log("Invalid filepath! Exiting program.");
+        process.exit();
     })
     .pipe(csv())
     .on('data', (row) => {
